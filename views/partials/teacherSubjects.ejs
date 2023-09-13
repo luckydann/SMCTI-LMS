@@ -1,0 +1,58 @@
+<div class="custom-card">
+    <div class="custom-card-header">
+        Subjects
+    </div>
+    <div class="container mt-3">
+        <form method="POST" action="/add-subject">
+            <div class="row">
+                <div class="col-md-2 col-12 form-group">
+                    <label for="code">Code:</label>
+                    <input type="text" class="form-control" id="code" name="code">
+                </div>
+                <div class="col-md-3 col-12 form-group">
+                    <label for="title">Title:</label>
+                    <input type="text" class="form-control" id="title" name="title">
+                </div>
+                <div class="col-md-4 col-12 form-group">
+                    <label for="description">Description:</label>
+                    <input type="text" class="form-control" id="description" name="description">
+                </div>
+                <div class="col-md-3 col-12 form-group my-auto">
+                    <button type="submit" class="btn btn-outline-success btn-block">Add Subject</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Code</th>
+            <th scope="col">Title</th>
+            <th scope="col">Description</th>
+            <th scope="col">Unique Enter Code</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+            <% for(let i = 0; i < subjects.length; i++) { %>
+                <tr>
+                    <td><%= subjects[i].code %></td>
+                    <td><%= subjects[i].title %></td>
+                    <td><%= subjects[i].description %></td>
+                    <td><%= subjects[i].uniqueCode %> </td>
+                    <td><button class="btn btn-danger" id="<%= subjects[i].id %>" onclick="dropSubject(id)">Drop Subject</button></td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>
+<script>
+    async function dropSubject(subjectId){
+        $.post('/delete-teacher-subject', {
+            subjectId
+        }).done(() => {
+            location.reload()
+        })
+    }
+</script>

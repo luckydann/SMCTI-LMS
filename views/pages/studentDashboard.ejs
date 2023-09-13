@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head') %>
+    <title>Dashboard</title>
+</head>
+<body>
+    <%- include('../partials/studentNavbar') %>
+    <div class="w-100 m-0 p-0 body">
+        <div class="todo-section center-items">
+            <div class="todo-section-content mx-auto">
+                <h2 class="h1 text-white">List of To-dos</h2>
+                <div class="todo-section-items center-items">
+                    <% if (ongoingActivities.length > 0) { %>
+                        <script>
+                            async function clickItem(subjectUniqueCode, activityId, type){
+                                if(type == 'Exam'){
+                                    $('#modalTitle').text('Exam alert!')
+                                    $('#modalBody').text(`This exam is timed, once you have clicked the "I understand!" button, you will not be able to retake and must take the Exam right away.`)
+                                    $('#proceedButton').attr('href', `/activity/${subjectUniqueCode}/${activityId}`)
+                                    $('#myModal').modal('show')
+                                    return
+                                }else{
+                                    window.location.href = '/activity/' + subjectUniqueCode + '/' + activityId
+                                }
+                            }
+                        </script>
+                        <div class="todo-with-content row">
+                            <% for( let i = 0; i < ongoingActivities.length; i++ ) { %>
+                                <% if (!ongoingActivities[i].isAnswered) { %>
+                                    <div class="col-12 col-md-6 todo-item-container" onclick="clickItem('<%= ongoingActivities[i].subject.uniqueCode %>', '<%= ongoingActivities[i].id %>', '<%= ongoingActivities[i].type %>')">
+                                        <div class="row todo mx-auto">
+                                            <div class="col-3 col-md-4 w-100 m-0 p-0 center-items icon-label text-center" style="border-right: 1px solid rgb(168, 190, 211);">
+                                                <i class="fa-regular fa-circle-check" style="transform: scale(5); color: rgb(220, 233, 250);"></i>
+                                                <span style="transform: translateY(40px);"><%= ongoingActivities[i].formattedEndDate %></span>
+                                            </div>
+                                            <div class="col-9 col-md-8 w-100 h-100 m-0 p-3 row">
+                                                <div class="col-12 m-0 p-0 custom-text-truncate">
+                                                    <%= ongoingActivities[i].name %>
+                                                </div>
+                                                <div class="col-12 w-100 m-0 p-0 todo-info-container">
+                                                    <span><%= ongoingActivities[i].subject.title %> - <%= ongoingActivities[i].type %></span>
+                                                    <span class="<%= ongoingActivities[i].status %>"><%= ongoingActivities[i].status %></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            <% } %>
+                        </div>
+
+                        <div class="modal" id="myModal">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 id="modalTitle" class="modal-title"></h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p id="modalBody"></p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        <a href="" type="button" class="btn btn-success" id="proceedButton">I understand!</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% } else {%>
+                        <div class="w-100 text-center">
+                            <h4>There are no to-dos here</h4>
+                            <p>Assignments/Quiz/Exams will appear here</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

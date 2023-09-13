@@ -1,0 +1,529 @@
+<div class="custom-card-header ">
+    Edit Activity
+    <button style="float: right;" class="btn btn-danger" onclick="deleteActivity()">Delete</button>
+</div>
+<div class="w-100 m-0 p-3">
+    <div class="form-group w-25">
+        <label for="activityType">Activity Type</label>
+        <select class="form-control" id="activityType">
+            <option <%= (activity.type == 'Assignment') ? 'selected' : '' %>>Assignment</option>
+            <option <%= (activity.type == 'Quiz') ? 'selected' : '' %>>Quiz</option>
+            <option <%= (activity.type == 'Exam') ? 'selected' : '' %>>Exam</option>
+            <option <%= (activity.type == 'Lesson') ? 'selected' : '' %>>Lesson</option>
+        </select>
+        <% if (activity.type == 'Exam') { %>
+            <div id="examDurationDiv" class="form-group mt-3">
+                <label for="examDuration">Exam Duration By Minutes</label> 
+                <input type="number" class="form-control" id="examDuration" name="examDuration" value="<%= activity.duration %>" placeholder="Exam Duration By Minutes">
+            </div>
+        <% } %>
+    </div>
+    <div class="row m-0 p-0 w-100 mt-3">
+        <div class="form-group col-12 col-md-6 m-0 p-0 pr-3">
+            <label for="title">Title</label>
+            <input type="text" class="form-control" id="title" name="title" value="<%= activity.name %>" placeholder="Activity Title">
+        </div>
+        <div class="form-group col-12 col-md-6 m-0 p-0 pr-3">
+            <label for="description">Description</label>
+            <input type="text" class="form-control" id="description" name="description" value="<%= activity.description %>" placeholder="Activity Description">
+        </div>
+        <div class="form-group col-12 col-md-6 m-0 p-0 pr-3">
+            <label for="start-date">Start Date</label>
+            <input type="datetime-local" class="form-control" id="start-date" name="start-date" value="<%= activity.startDate %>">
+        </div>
+        <div class="form-group col-12 col-md-6 m-0 p-0 pr-3">
+            <label for="end-date">End Date</label>
+            <input type="datetime-local" class="form-control" id="end-date" name="end-date" value="<%= activity.endDate %>">
+        </div>
+        <!-- 
+            <div class="w-100 m-0 mt-5 p-0 center-items-vertical">
+                <button class="btn btn-success mt-2" style="width: 200px;">Save Activity</button>
+                <button class="btn btn-outline-secondary mt-2" style="width: 200px;">Cancel</button>
+            </div> 
+        -->
+    </div>
+    <hr>
+    <% if (activity.type == 'Lesson') { %>
+        <div class="m-0 p-0 w-100 my-3">
+            <h5>Upload Materials (.ppt, .ppt, .doc, .docx, .pdf)</h5>
+            <form action="/upload-material/<%= subject.uniqueCode %>/<%= activity.id %>" method="POST" enctype="multipart/form-data">
+                <input type="file" name="file">
+                <button class="btn btn-outline-success">Upload File</button>
+            </form>
+            <% if (material) { %>
+                <div class="w-100 m-0 p-0 my-3">
+                    <h5>Existing File: <%= material.fileName %></h5>
+                    <a href="/uploads/<%= material.fileName %>" class="btn btn-outline-secondary">Download File</a>
+                </div>
+            <% } %>
+        </div>
+    <% } %>
+    <% if (activity.type != 'Lesson') { %>
+        <div class="m-0 p-0 w-100 my-3">
+            <h5>Upload questions via excel file (.xlsx)</h5>
+            <form action="/upload-questions/<%= subject.uniqueCode %>/<%= activity.id %>" method="POST" enctype="multipart/form-data">
+                <input type="file" name="file">
+                <button class="btn btn-outline-success">Upload File</button>
+            </form>
+            <% if (material) { %>
+                <div class="w-100 m-0 p-0 my-3">
+                    <h5>Existing File: <%= material.fileName %></h5>
+                    <a href="/uploads/<%= material.fileName %>" class="btn btn-outline-secondary">Download File</a>
+                </div>
+            <% } %>
+        </div>
+    <% } %>
+    <div id="questionsDiv" class="m-0 p-0 w-100 mt-3">
+
+        <div class="w-100 m-0 mb-3 p-0 text-right">
+            <form action="/delete-all-questions/<%= subject.uniqueCode %>/<%= activity.id %>" method="POST">
+                <button class="btn btn-danger" type="submit">Remove All Questions</button>
+            </form>
+        </div>
+
+        <% for( let i = 0; i < questions.length; i++ ) { %>
+            <div class="a-question px-3" id="q<%= i + 1 %>" >
+                <div class="form-group m-0 p-0 pr-3">
+                    <label for="question<%= i + 1 %>"><b>Question <%= i + 1 %></b></label>
+                    <span class="q-icons">- 
+                        <i id="q<%= i + 1 %>-icon-x" class="fa-solid fa-xmark x-icon" style="visibility: hidden;"></i>
+                        <i id="q<%= i + 1 %>-icon-check" class="fa-solid fa-check check-icon" style="visibility: visible;"></i>
+                        <i id="q<%= i + 1 %>-icon-loading" class="fa-solid fa-spinner loading-icon" style="visibility: hidden;"></i> 
+                        <span class="q-icon-message" id="q<%= i + 1 %>-icon-message">Saved</span>
+                    </span>
+
+                    <% if (questions[i].withImg != null) { %>
+                        <div id="img_<%= questions[i].id %>" class="my-4">
+                            <img src="/uploads/<%= questions[i].withImg.fileName %>" alt="Pic" style="max-width: 500px">
+                        </div>
+                    <% } %>
+                    
+                    <input type="text" class="form-control" id="question<%= i + 1 %>" name="question<%= i + 1 %>" value="<%= questions[i].prompt %>" placeholder="Question here"  disabled>
+                </div>
+                <div id="div_mc<%= i + 1 %>" class="form-check form-check-inline mt-2">
+                    <input class="form-check-input" type="radio" name="mc<%= i + 1 %>" id="mc<%= i + 1 %>" value="<%= i + 1 %>" onclick="showMC(value)" <%= (questions[i].type == 'mc') ? 'checked' : 'notchecked' %> disabled>
+                    <label class="form-check-label" for="mc<%= i + 1 %>">Multiple Choice</label>
+                </div>
+                <div id="div_i<%= i + 1 %>" class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="i<%= i + 1 %>" id="i<%= i + 1 %>" value="<%= i + 1 %>" onclick="showI(value)" <%= (questions[i].type == 'i') ? 'checked' : 'notchecked' %> disabled>
+                    <label class="form-check-label" for="i<%= i + 1 %>">Identification</label>
+                </div>
+                <div id="q<%= i + 1 %>_answer" class="mt-2">
+                    <h6>Answer</h6>
+                    <div id="q<%= i + 1 %>mc" <%= (questions[i].type == 'mc') ? 'style="display: none"' : '' %>>
+                        <% if (questions[i].type == 'mc') { %>
+                            <p><i>*choices will be random</i></p>
+                            <div id="q<%= i + 1 %>mc_choices">
+                                <% for( let j = 0; j < questions[i].choices.length - 1; j++ ) { %>
+                                    <input type="text" class="form-control mb-1" id="q<%= i + 1 %>c<%= j + 1 %>" name="q<%= i + 1 %>c<%= j + 1 %>" value="<%= questions[i].choices[j] %>" placeholder="Choice <%= j + 1 %> <%= (j == 0) ? '(Correct answer here)' : '' %>" disabled>
+                                <% } %>
+                            </div>
+                            <div class="w-100 m-0 p-0 pt-1">
+                                <button id="q<%= i + 1 %>_addChoice" type="button" class="btn btn-warning" value="<%= i + 1 %>" onclick="addChoice(value)" style="display: none;">+ Add choice</button>
+                            </div>
+                        <% } %>
+                    </div>
+                    <div id="q<%= i + 1 %>i" <%= (questions[i].type == 'i') ? 'style="display: none"' : '' %>">
+                        <% if (questions[i].type == 'i') { %>
+                            <input type="text" class="form-control mb-1" id="q<%= i + 1 %>i_answer" name="q<%= i + 1 %>i_answer" value="<%= questions[i].answer %>" placeholder="Answer" disabled>
+                        <% } %>
+                    </div>
+
+                    <div class="w-100 m-0 p-0 mt-2">
+                        <input type="text" class="form-control mb-1" id="q<%= i + 1 %>e" name="q<%= i + 1 %>e" placeholder="Explanation here" value="<%= questions[i].explanation %>" disabled>
+                        <button type="button" id="q<%= i + 1 %>_save" class="btn btn-success" value="<%= i + 1 %>" onclick="saveQuestion(value)" style="display: none;">Save Question</button>
+                        <button type="button" class="btn btn-danger" value="<%= i + 1 %>" onclick="deleteQuestion(value)">Delete Question</button>
+                    </div>
+                </div>
+                <hr class="mx-4">
+            </div>
+        <% } %>
+    </div>
+    <div class="add-question" onclick="addQuestion()">
+        <span><i class="fa-solid fa-plus"></i></span>
+        <h4>New Question</h4>
+    </div>
+    <script>
+        function uploadImage(number, questionId){
+            var questionNumber = Number(number)
+            var fileInput = $('#img_input' + questionNumber)[0]
+            var file = fileInput.files[0]
+            var formData = new FormData()
+            formData.append('file', file)
+            $.post({
+                url: '/upload/' + questionId,
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: async function(data) {
+                    if(await data.savedFile){
+                        alert("Question " + questionNumber + " image successfully uploaded!")
+                    }else{
+                        alert("Question " + questionNumber + " image failed to upload!")
+                    }
+                    savedIcon(questionNumber)
+                },
+                error: function(xhr, status, error) {
+                    alert("Question " + questionNumber + " image failed to upload!")
+                    console.log(xhr.responseText)
+                }
+            })
+        }
+        function deleteActivity(){
+            const url = window.location.href;
+            const splitUrl = url.split("/");
+            const subjectUniqueCode = splitUrl[splitUrl.length - 3];
+            const activityId = splitUrl[splitUrl.length - 2];
+
+            $.post('/delete-activity/' + subjectUniqueCode, {
+                activityId: activityId
+            }).done(() => {
+                window.location.href = '/dashboard/' + subjectUniqueCode + '/activities'
+            })
+        }
+        function showMC(id){
+            var mc = document.getElementById('q' + id + 'mc')
+            var i = document.getElementById('q' + id + 'i')
+            mc.style.display = 'block'
+            i.style.display = 'none'
+
+            document.getElementById('i' + id).checked = false
+        }
+
+        function showI(id){
+            var mc = document.getElementById('q' + id + 'mc')
+            var i = document.getElementById('q' + id + 'i')
+            mc.style.display = 'none'
+            i.style.display = 'block'
+
+            document.getElementById('mc' + id).checked = false
+        }
+
+        function addChoice(questionNumber) {
+            var container = document.getElementById("q" + questionNumber + "mc_choices")
+            var numChoices = container.getElementsByTagName("input").length
+
+            var newChoice = document.createElement("div")
+            newChoice.className = "x-answer"
+
+            var icon = document.createElement("i")
+            icon.className = "fa-sharp fa-solid fa-xmark q" + questionNumber + '-x-icon'
+            icon.addEventListener("click", function() {
+                container.removeChild(newChoice)
+                updateChoiceNames(container, questionNumber)
+            });
+
+            var input = document.createElement("input")
+            input.type = "text"
+            input.className = "form-control mb-1"
+            input.name = "q" + questionNumber + "c" + (numChoices + 1)
+            input.placeholder = "Choice " + (numChoices + 1)
+
+            newChoice.appendChild(icon)
+            newChoice.appendChild(input)
+
+            container.appendChild(newChoice)
+        }
+
+        function updateChoiceNames(container, questionNumber) {
+            var choices = container.getElementsByClassName("x-answer");
+            var numChoices = choices.length;
+
+            for (var i = 0; i < numChoices; i++) {
+                var choice = choices[i];
+                var input = choice.getElementsByTagName("input")[0];
+
+                input.name = "q" + questionNumber + "c" + (i + 3);
+                input.setAttribute("data-choice-number", i + 3);
+                input.placeholder = "Choice " + (i + 3);
+            }
+        }
+
+        function saveQuestion(questionNumber){
+            savingIcon(questionNumber)
+            var parentDiv = document.getElementById('q' + questionNumber)
+            var question = document.getElementById('question' + questionNumber).value
+            var mc = document.getElementById('mc' + questionNumber).checked
+            var explanation = document.getElementById('q' + questionNumber + 'e').value
+            var answer = ''
+            if(mc){
+                var choices = document.getElementById("q" + questionNumber + "mc_choices")
+                var inputChoices = choices.getElementsByTagName("input")
+                for(var i = 0; i < inputChoices.length; i++){
+                    var choice = inputChoices[i].value
+                    answer += choice + '/=/=/'
+                }
+            }else{
+                answer = document.getElementById('q' + questionNumber + 'i_answer').value
+            }
+
+            const url = window.location.href;
+            const splitUrl = url.split("/");
+            const subjectUniqueCode = splitUrl[splitUrl.length - 3];
+            const activityId = splitUrl[splitUrl.length - 2];
+
+            $.post('/add-question/' + activityId + '/' + subjectUniqueCode, {
+                question: question,
+                isMultipleChoice: mc,
+                answer: answer,
+                explanation: explanation
+            }).done(async (response) => {
+                if(response.savedQuestion){
+                    document.getElementById('q' + questionNumber + '_save').style.display = 'none'
+                    if(mc){
+                        document.getElementById('q' + questionNumber + '_addChoice').style.display = 'none'
+                        document.getElementById('div_i' + questionNumber).style.display = 'none'
+                    }else{
+                        document.getElementById('div_mc' + questionNumber).style.display = 'none'
+                    }
+                    var parentQuestionDiv = document.getElementById('q' + questionNumber)
+                    var allInput = parentQuestionDiv.getElementsByTagName('input')
+                    for(var i = 0; i < allInput.length; i++){
+                        var input = allInput[i]
+                        if(input)
+                            input.disabled = true
+                    }
+
+                    var allXIcon = parentQuestionDiv.querySelectorAll('.q' + questionNumber + '-x-icon')
+                    for(var i = 0; i < allXIcon.length; i++){
+                        var xIcon = allXIcon[i]
+                        xIcon.style.display = 'none'
+                    }
+
+                    var imgDiv = document.getElementById('img_' + questionNumber)
+                    var input = imgDiv.getElementsByTagName('input')
+                    
+                    if(input[0].files.length > 0){
+                        uploadImage(questionNumber, response.savedQuestion.id)
+                    }else{
+                        savedIcon(questionNumber)
+                    }
+
+                }
+            })
+        }
+
+        function savingIcon(questionNumber){
+            document.getElementById('q' + questionNumber + '-icon-check').style.visibility = 'hidden'
+            document.getElementById('q' + questionNumber + '-icon-x').style.visibility = 'hidden'
+            document.getElementById('q' + questionNumber + '-icon-loading').style.visibility = 'visible'
+            document.getElementById('q' + questionNumber + '-icon-message').innerText = 'Saving...'
+        }
+
+        function savedIcon(questionNumber){
+            document.getElementById('q' + questionNumber + '-icon-loading').style.visibility = 'hidden'
+            document.getElementById('q' + questionNumber + '-icon-check').style.visibility = 'visible'
+            document.getElementById('q' + questionNumber + '-icon-message').innerText = 'Saved'
+        }
+
+        async function deleteQuestion(questionNumber){
+            const questionDiv = document.getElementById('questionsDiv')
+            const questions = questionDiv.getElementsByClassName('a-question')
+
+            const url = window.location.href;
+            const splitUrl = url.split("/");
+            const subjectUniqueCode = splitUrl[splitUrl.length - 3];
+            const activityId = splitUrl[splitUrl.length - 2];
+            const prompt = document.getElementById('question' + questionNumber).value
+            $.post('/delete-question/' + activityId, {
+                prompt: prompt
+            }).done(async (response) => {
+                if(await response.question){
+                    var doneChange = false
+                    var questionToRemove = null
+                    
+                    for(var i = 0; i < questions.length; i++){
+                        var question = questions[i]
+                        if (i + 1 == questionNumber) {
+                            questionToRemove = question;
+                        } else if (i + 1 > questionNumber) {
+                            changeQuestionNumber(question, i);
+                        }
+                    }
+                    questionDiv.removeChild(questionToRemove)
+                }
+            })
+        }
+
+        async function addQuestion(){
+            const questionDiv = document.getElementById('questionsDiv')
+            const questionsLength = questionDiv.getElementsByClassName('a-question').length
+            generateQuestion(questionsLength + 1)
+        }
+
+        async function changeQuestionNumber(question, i){
+            question.id = 'q' + i
+            var childDivs = question.children
+            var div1 = adjustDiv1(childDivs[0], i)
+            var div2 = adjustDiv2(childDivs[1], i)
+            var div3 = adjustDiv3(childDivs[2], i)
+            var div4 = adjustDiv4(childDivs[3], i)
+            
+        }
+
+        async function adjustDiv1(div, i){
+            var questionLabel = div.querySelector('label')
+            questionLabel.htmlFor = 'question' + i
+            questionLabel.innerHTML = '<b>Question ' + i + '</b>'
+
+            var icons = div.querySelectorAll('.q-icons i')
+            for(var j = 0; j < icons.length; j++){
+                var icon = icons[j]
+                var iconId = 'q' + i + '-' + icon.id.split('-')[1] + '-' + icon.id.split('-')[2]
+                icon.id = iconId
+            }
+
+            var messageSpan = div.querySelector('.q-icons .q-icon-message')
+            messageSpan.id = 'q' + i + '-icon-message'
+
+            var questionInput = div.querySelector('input')
+            questionInput.id = 'question' + i
+            questionInput.name = 'question' + i
+
+            var imageDiv = div.querySelector('.image-div')
+            imageDiv.id = 'img_' + i
+
+            var inputFile = imageDiv.getElementsByTagName('input')
+            inputFile.disabled = false
+            inputFile.id = 'img_input' + i
+        }
+
+        async function adjustDiv2(div, i){
+            div.id = 'div_mc' + i
+            var mcRadio = div.querySelector('input')
+            var radioLabel = div.querySelector('label')
+
+            if(!mcRadio)
+                return
+
+            mcRadio.name = 'mc' + i
+            mcRadio.id = 'mc' + i
+            mcRadio.onclick = null
+            mcRadio.setAttribute('onclick', 'showMC(' + i + ')')
+
+            radioLabel.htmlFor = 'mc' + i
+        }
+
+        async function adjustDiv3(div, i){
+            div.id = 'div_i' + i
+            var iRadio = div.querySelector('input')
+            var radioLabel = div.querySelector('label')
+
+            if(!iRadio)
+                return
+
+            iRadio.name = 'i' + i
+            iRadio.id = 'i' + i
+            iRadio.onclick = null
+            iRadio.setAttribute('onclick', 'showI(' + i + ')')
+
+            radioLabel.htmlFor = 'i' + i
+        }
+
+        async function adjustDiv4(div, i){
+            var children = div.children
+            var child1 = children[1]
+            var child2 = children[2]
+            var child3 = children[3]
+
+            div.id = 'q' + i + '_answer'
+
+            // first div
+            child1.id = 'q' + i + 'mc'
+            var child1_1 = child1.children[1]
+            if(child1_1){
+                child1_1.id = 'q' + i + 'mc_choices'
+                for(var j = 0; j < child1_1.children.length; j++){
+                    var input = child1_1.children[j]
+                    input.id = 'q' + i + 'c' + (j + 1)
+                    input.name = 'q' + i + 'c' + (j + 1)
+                }
+            }
+            if(child1.children[2] != null){
+                var button = child1.children[2].querySelector('button')
+                button.id = 'q' + i + '_addChoice'
+                button.onclick = null
+                button.setAttribute('onclick', 'addChoice(' + i + ')')
+            }
+
+            //second div
+            child2.id = 'q' + i + 'i'
+            var iInput = child2.querySelector('input')
+            if(iInput){
+                iInput.id = 'q' + i + 'i_answer'
+                iInput.name = 'q' + i + 'i_answer'
+            }
+
+            //third div
+            if(child3 != null){
+                var explanation = child3.children[0]
+                explanation.id = 'q' + i + 'e'
+                explanation.name = 'q' + i + 'e'
+                if(child3.children[1] != null){
+                    var saveButton = child3.children[1]
+                    
+                    saveButton.id = 'q' + i + '_save'
+                    saveButton.onclick = null
+                    saveButton.setAttribute('onclick', 'saveQuestion(' + i + ')')
+                }
+                var deleteButton = child3.children[2]
+                deleteButton.onclick = null
+                deleteButton.setAttribute('onclick', 'deleteQuestion(' + i + ')')
+            }
+        }
+
+        async function generateQuestion(questionNumber){
+            const questionHTML = `
+                <div class="a-question px-3" id="q${questionNumber}">
+                    <div class="form-group m-0 p-0 pr-3">
+                        <label for="question${questionNumber}"><b>Question ${questionNumber}</b></label>
+                        <span class="q-icons">
+                            <i id="q${questionNumber}-icon-x" class="fa-solid fa-xmark x-icon"></i>
+                            <i id="q${questionNumber}-icon-check" class="fa-solid fa-check check-icon"></i>
+                            <i id="q${questionNumber}-icon-loading" class="fa-solid fa-spinner loading-icon"></i> 
+                            <span class="q-icon-message" id="q${questionNumber}-icon-message">Not saved</span>
+                        </span>
+                        <div id="img_${questionNumber}" class="my-4 image-div">
+                            <h6>Upload Image</h6>
+                            <input id="img_input${questionNumber}" type="file" name="file">
+                        </div>
+                        <input type="text" class="form-control" id="question${questionNumber}" name="question${questionNumber}" placeholder="Question here">
+                    </div>
+                    <div id="div_mc${questionNumber}"  class="form-check form-check-inline mt-2">
+                        <input class="form-check-input" type="radio" name="mc${questionNumber}" id="mc${questionNumber}" value="option1" onclick="showMC(${questionNumber})" checked>
+                        <label class="form-check-label" for="mc${questionNumber}">Multiple Choice</label>
+                    </div>
+                    <div id="div_i${questionNumber}" class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="i${questionNumber}" id="i${questionNumber}" value="option2" onclick="showI(${questionNumber})">
+                        <label class="form-check-label" for="i${questionNumber}">Identification</label>
+                    </div>
+                    <div id="q${questionNumber}_answer" class="mt-2">
+                        <h6>Answer</h6>
+                        <div id="q${questionNumber}mc">
+                            <p><i>*choices will be random</i></p>
+                            <div id="q${questionNumber}mc_choices">
+                                <input type="text" class="form-control mb-1" id="q${questionNumber}c1" name="q${questionNumber}c1" placeholder="Choice 1 (Correct answer here)">
+                                <input type="text" class="form-control mb-1" id="q${questionNumber}c2" name="q${questionNumber}c2" placeholder="Choice 2">
+                            </div>
+                            <div class="w-100 m-0 p-0 pt-1">
+                                <button id="q${questionNumber}_addChoice"  type="button" class="btn btn-warning" onclick="addChoice(${questionNumber})">+ Add choice</button>
+                            </div>
+                        </div>
+                        <div id="q${questionNumber}i" style="display: none;">
+                            <input type="text" class="form-control mb-1" id="q${questionNumber}i_answer" name="q${questionNumber}i_answer" placeholder="Answer">
+                        </div>
+                        <div class="w-100 m-0 p-0 mt-2">
+                            <input type="text" class="form-control mb-1" id="q${questionNumber}e" name="q${questionNumber}e" placeholder="Explanation here">
+                            <button type="button" id="q${questionNumber}_save" class="btn btn-success" onclick="saveQuestion(${questionNumber})">Save Question</button>
+                            <button type="button" class="btn btn-danger" onclick="deleteQuestion(${questionNumber})">Delete Question</button>
+                        </div>
+                    </div>
+                    
+                <hr class="mx-4">
+                </div>`
+            var parentDiv = document.getElementById('questionsDiv')
+            parentDiv.insertAdjacentHTML('beforeend', questionHTML)
+        }
+
+    </script>
+</div>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head') %>
+    <title>subjects</title>
+</head>
+<body>
+    <% if (account.role == 'Student') { %>
+        <%- include('../partials/studentNavbar') %>
+    <% } else { %>
+        <%- include('../partials/teacherNavbar') %>
+    <% } %>
+    <div class="w-100 m-0 p-0 body" style="background-color: #f0f6ff;">
+        <div class="row w-100 adj-padding">
+            <div class="col-12 col-md-3 m-0 px-3 mb-2">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                  <button class="nav-link active" id="v-pills-profile-tab" data-toggle="pill" data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="true">Profile</button>
+                </div>
+            </div>
+            <div class="col-12 col-md-9 m-0">
+                <div class="tab-content" id="v-pills-tabContent">
+                    <div class="tab-pane fade show active" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                        <div class="custom-card">
+                            <div class="custom-card-header">
+                                Account
+                            </div>
+                            <div class="custom-card-body">
+                                <div class="custom-card-content">
+                                    <div class="custom-card-content-label">
+                                        Account ID
+                                    </div>
+                                    <div class="custom-card-content-value" id="accountId">
+                                        <%= account.accountId %>
+                                    </div>
+                                </div>
+                                <div class="custom-card-content">
+                                    <div class="custom-card-content-label">
+                                        Password
+                                    </div>
+                                    <div class="custom-card-content-value" id="password">
+                                        <input type="password" class="form-control mb-1" id="passwordInput" name="password" placeholder="New Password">
+                                        <input type="password" class="form-control mb-1" id="passwordInputRetype" name="retypePassword" placeholder="Retype New Password">
+                                        <p id="passwordChecker" style="color: red; font-size: small;display:none;">Wrong password</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="custom-card">
+                            <div class="custom-card-header">
+                                User Information
+                            </div>
+                            <div class="custom-card-body">
+                                <div class="custom-card-content">
+                                    <div class="custom-card-content-label">
+                                        Name
+                                    </div>
+                                    <div class="custom-card-content-value" id="name">
+                                        <input type="text" class="form-control mb-1" id="nameInput" name="name" placeholder="Enter Name" value="<%= account.name %>">
+                                    </div>
+                                </div>
+                                <% if(account.role == 'Teacher') { %>
+                                    <div class="custom-card-content">
+                                        <div class="custom-card-content-label">
+                                            Email
+                                        </div>
+                                        <div class="custom-card-content-value" id="email">
+                                            <input type="email" class="form-control mb-1" id="emailInput" name="email" placeholder="Enter Email" value="<%= account.teacher.email %>">
+                                        </div>
+                                    </div>
+                                <% } %>
+                                <% if(account.role == 'Student') { %>
+                                    <div class="custom-card-content">
+                                        <div class="custom-card-content-label">
+                                            Email
+                                        </div>
+                                        <div class="custom-card-content-value" id="email">
+                                            <input type="email" class="form-control mb-1" id="emailInput" name="email" placeholder="Enter Email" value="<%= account.student.email %>">
+                                        </div>
+                                    </div>
+                                    <div class="custom-card-content">
+                                        <div class="custom-card-content-label">
+                                            Sex
+                                        </div>
+                                        <div class="custom-card-content-value" id="sex">
+                                            <select class="form-control" name="sex" id="sexInput">
+                                                <option>Male</option>
+                                                <option>Female</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                        <div class="text-left">
+                            <button id="saveButton" type="button" onclick="save()" class="btn btn-success mb-2" style="width: 400px;" disabled>Save</button>
+                            <button type="button" onclick="cancelEdit()" class="btn btn-outline-secondary" style="width: 400px;">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(() => {
+            const password = document.getElementById('passwordInput')
+            const passwordRetype = document.getElementById('passwordInputRetype')
+            const saveButton = document.getElementById('saveButton')
+            const message = document.getElementById('passwordChecker')
+
+            function checkPasswordMatch(){
+                saveButton.disabled = password.value != passwordRetype.value
+                message.style.display = 'block'
+                message.innerText = 'Password does not match'
+                message.style.color = 'red'
+                if(password.value == '' || passwordRetype.value == ''){
+                    saveButton.disabled = true
+                    return
+                }
+                if(password.value == passwordRetype.value){
+                    message.style.display = 'block'
+                    message.innerText = 'Password match'
+                    message.style.color = 'green'
+                }
+            }
+            password.addEventListener('input', checkPasswordMatch)
+            passwordRetype.addEventListener('input', checkPasswordMatch)
+        })
+        function cancelEdit(){
+            window.location.href = '/profile'
+        }
+        function save(){
+            var sex = document.getElementById('sex')
+            var name = $('#nameInput').val()
+            var password = $('#passwordInput').val()
+            var email = $('#emailInput').val()
+            if(sex == null){
+                $.post('/update-teacher', {
+                    name: name,
+                    password: password,
+                    email: email
+                }).done((response) => {
+                    window.location.href = '/profile'
+                })
+            }else{
+                var sex = $('#sexInput').val()
+                $.post('/update-student',{
+                    name: name,
+                    password: password,
+                    email: email,
+                    sex: sex
+                }).done((response) => {
+                    window.location.href = '/profile'
+                })
+            }
+        }
+    </script>
+</body>
+</html>

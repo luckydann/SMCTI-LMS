@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head') %>
+    <title>subjects</title>
+</head>
+<body>
+    <% if (account.role == 'Student') { %>
+        <%- include('../partials/studentNavbar') %>
+    <% } else { %>
+        <%- include('../partials/teacherNavbar') %>
+    <% } %>
+    <div class="w-100 m-0 p-0 body" style="background-color: #f0f6ff;">
+        <div class="row w-100 adj-padding">
+            <div class="col-12 col-md-3 m-0 px-3 mb-2">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <button class="nav-link active" id="v-pills-profile-tab" data-toggle="pill" data-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="true">Profile</button>
+                    <button class="nav-link" id="v-pills-subjects-tab" data-toggle="pill" data-target="#v-pills-subjects" type="button" role="tab" aria-controls="v-pills-subjects" aria-selected="false">Subjects</button>
+                    
+                    <% if (account.role == 'Student' && account.student.sex == 'Female') { %>
+                        <button class="nav-link" id="v-pills-period-tab" data-toggle="pill" data-target="#v-pills-period" type="button" role="tab" aria-controls="v-pills-period" aria-selected="false">Period Tracker</button>
+                        <button class="nav-link" id="v-pills-pregnancy-tab" data-toggle="pill" data-target="#v-pills-pregnancy" type="button" role="tab" aria-controls="v-pills-pregnancy" aria-selected="false">Pregnancy Tracker</button>
+                    <% } %>
+                  
+                </div>
+            </div>
+            <div class="col-12 col-md-9 m-0">
+                <div class="tab-content" id="v-pills-tabContent">
+                    <div class="tab-pane fade show active" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                        <div class="custom-card">
+                            <div class="custom-card-header">
+                                <form action="/logout?_method=DELETE" method="POST">
+                                    Account
+                                    <button class="btn btn-danger" type="submit" style="float:right">Logout</button>
+                                </form>
+                            </div>
+                            <div class="custom-card-body">
+                                <div class="custom-card-content">
+                                    <div class="custom-card-content-label">
+                                        Account ID
+                                    </div>
+                                    <div class="custom-card-content-value" id="accountId">
+                                        <%= account.accountId %>
+                                    </div>
+                                </div>
+                                <div class="custom-card-content">
+                                    <div class="custom-card-content-label">
+                                        Password
+                                    </div>
+                                    <div class="custom-card-content-value" id="password">
+                                        <%= account.password %>
+                                    </div>
+                                </div>
+                                <div class="custom-card-content">
+                                    <div class="custom-card-content-label">
+                                        QR Code
+                                    </div>
+                                    <div class="custom-card-content-value" id="password">
+                                        <div class="table-qr">
+                                            <img src="/get-qrcode/<%= account.uniqueCode %>" alt="QR Code" srcset="" style="width: 200px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="custom-card">
+                            <div class="custom-card-header">
+                                User Information
+                            </div>
+                            <div class="custom-card-body">
+                                <div class="custom-card-content">
+                                    <div class="custom-card-content-label">
+                                        Name
+                                    </div>
+                                    <div class="custom-card-content-value" id="name">
+                                        <%= account.name %>
+                                    </div>
+                                </div>
+                                <% if(account.role == 'Teacher') { %>
+                                    <div class="custom-card-content">
+                                        <div class="custom-card-content-label">
+                                            Email
+                                        </div>
+                                        <div class="custom-card-content-value" id="email">
+                                            <%= account.teacher.email %>
+                                        </div>
+                                    </div>
+                                <% } %>
+                                <% if(account.role == 'Student') { %>
+                                    <div class="custom-card-content">
+                                        <div class="custom-card-content-label">
+                                            Email
+                                        </div>
+                                        <div class="custom-card-content-value" id="email">
+                                            <%= account.student.email %>
+                                        </div>
+                                    </div>
+                                    <div class="custom-card-content">
+                                        <div class="custom-card-content-label">
+                                            Sex
+                                        </div>
+                                        <div class="custom-card-content-value" id="sex">
+                                            <%= account.student.sex %>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                        <div class="text-left">
+                            <button type="button" onclick="editProfile()" class="btn btn-secondary" style="width: 400px;">Edit</button>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="v-pills-subjects" role="tabpanel" aria-labelledby="v-pills-subjects-tab">
+                        <% if(account.role == 'Student') { %>
+                            <%- include('../partials/studentSubjects') %>
+                        <% } else { %>
+                            <%- include('../partials/teacherSubjects') %>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function editProfile(){
+            window.location.href = '/profile/edit'
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head') %>
+    <title>Dashboard</title>
+</head>
+<body>
+    <%- include('../partials/teacherNavbar') %>
+    <div class="w-100 m-0 p-0 body">
+        <div class="row h-50 w-100 m-0 p-0">
+            <% if (subjects.length == 0) { %>
+                <div class="w-100 mx-auto mt-5 col-md-10 col-12 d-flex align-items-center bg-primary text-white" style="border-radius: 30px;">
+                    <div class="text-center w-100">
+                        <h1>Nothing to show</h1>
+                    </div>
+                </div>
+            <% } else { %>
+                <div class="row m-0 p-0 w-100">
+                    <div class="col-md-1 col-12 m-0 p-0 w-100 row t-navbar">
+                        <div class="col-md-12 col-3 p-0 center-items-vertical">
+                            <a href="/dashboard/<%= subject.uniqueCode %>" class="t-navbar-group center-items-vertical ">
+                                <div class="m-0 p-0">
+                                    <i class="fa-solid fa-house" style="scale: 2;"></i>
+                                </div>
+                                <div class="m-0 p-0 mt-3">
+                                    <h6>Home</h6>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-12 col-3 p-0 center-items-vertical">
+                            <a href="/dashboard/<%= subject.uniqueCode %>/activities" class="t-navbar-group center-items-vertical ">
+                                <div class="m-0 p-0">
+                                    <i class="fa-solid fa-book-open" style="scale: 2;"></i>
+                                </div>
+                                <div class="m-0 p-0 mt-3">
+                                    <h6>Activities</h6>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-12 col-3 p-0 center-items-vertical">
+                            <a href="/dashboard/<%= subject.uniqueCode %>/settings" class="t-navbar-group center-items-vertical ">
+                                <div class="m-0 p-0">
+                                    <i class="fa-solid fa-sliders" style="scale: 2;"></i>
+                                </div>
+                                <div class="m-0 p-0 mt-3">
+                                    <h6>Settings</h6>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-11 col-12 m-0 p-4 w-100">
+                        <% if (type == 'home') { %>
+                            <%- include('../partials/teacherHome') %>
+                        <% } else if (type == 'student-progress') { %>
+                            <%- include('../partials/teacherStudentProgress') %>
+                        <% } else if (type == 'activities') { %>
+                            <%- include('../partials/teacherActivities') %>
+                        <% } else { %>
+                            <%- include('../partials/teacherSettings') %>
+                        <% } %>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>

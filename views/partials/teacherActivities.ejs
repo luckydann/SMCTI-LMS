@@ -1,0 +1,56 @@
+<div class="custom-card w-100">
+    <% if (subtype == 'new-activity') { %>
+        <%- include('../partials/teacherActivities_newActivity') %>
+    <% } else if (subtype == 'edit-activity') { %>
+        <%- include('../partials/teacherActivities_editActivity') %>
+    <% } else if(subtype == 'none'){ %>
+        <div class="custom-card-header">
+            Manage Activities
+        </div>
+        <div class="m-0 mt-3 p-0 w-100">
+            <a href="/dashboard/<%= subject.uniqueCode %>/new-activity" class="btn btn-success">+ New Activity</a>
+        </div>
+        <hr>
+        <div class="table-responsive-md">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Activity Type</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Student Progress</th>
+                    <th scope="col">Due Date</th>
+                    <th scope="col">Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <% for( let i = 0; i < activities.length; i++ ) { %>
+                        <tr style="cursor: pointer;" id="<%= activities[i].id %>" onclick="navigateToEdit(id)">
+                            <td scope="row"><%= i + 1 %></td>
+                            <td><%= activities[i].type %></td>
+                            <td>
+                                <div>
+                                    <h5><%= activities[i].name %></h5>
+                                </div>
+                                <div>
+                                    <p><%= activities[i].description %></p>
+                                </div>
+                            </td>
+                            <td><span class="h3"><%= activities[i].totalFinishedStudents.length %></span>/<%= totalStudents %> <div class="pt-3"><a href="/dashboard/student-progress/<%= subject.uniqueCode %>/<%= activities[i].id %>" class="btn btn-outline-success">View students</a></div></td>
+                            <td><%= activities[i].startDate + '-' + activities[i].endDate %></td>
+                            <td><div class="act-<%= activities[i].status %>"><%= activities[i].status %></div></td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    <% } %>
+    <script>
+        function navigateToEdit(id){
+            const url = window.location.href
+            const parts = url.split("/");
+            const activityId = parts[4];
+            window.location.href = '/dashboard/' + activityId + '/' + id + '/edit-activity'
+        }
+    </script>
+</div>

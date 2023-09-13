@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head') %>
+    <title>To-Dos</title>
+</head>
+<body style="background-color: rgb(225, 228, 251);">
+    <%- include('../partials/studentNavbar') %>
+    <div class="todo-page-section">
+        <div class="todo-page-container m-0">
+            <div class="todo-filter row">
+                <div class="col-12 col-md-3 w-100 m-0 p-2">
+                    <select id="subjectLists" class="form-control form-control-lg">
+                        <% if (userSubjects.length > 0) { %>
+                            <option id="0">All Subjects</option>
+                            <% for( let i = 0; i < userSubjects.length; i++ ) { %>
+                                <option id="<%= userSubjects[i].id %>"><%= userSubjects[i].code %> - <%= userSubjects[i].title %></option>
+                            <% } %>
+                        <% } else { %>
+                            <option>No subjects</option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="col-12 col-md-3 w-100 m-0 p-2">
+                    <select id="typeLists" class="form-control form-control-lg">
+                        <option>All</option>
+                        <option>Assignment</option>
+                        <option>Quiz</option>
+                        <option>Exam</option>
+                        <option>Lesson</option>
+                    </select>
+                </div>
+            </div>
+            <div class="w-100 m-0 todo-content">
+
+                <!-- <div id="no-todo-div" class="w-100 center-items">
+                    <div class="w-100 text-center text-dark">
+                        <h4>There are no to-dos here</h4>
+                        <p>Available to-dos will appear here</p>
+                    </div>
+                </div> -->
+
+                <div id="todo-div" class="h-auto m-0 p-0 row">
+
+                </div>
+                
+            </div>
+
+            <div class="modal" id="myModal">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 id="modalTitle" class="modal-title"></h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p id="modalBody"></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <a href="" type="button" class="btn btn-success" id="proceedButton">I understand!</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script>
+        $(() => {
+            getActivities()
+        })
+        const selectElement = document.getElementById('subjectLists')
+        const typeElement = document.getElementById('typeLists')
+        selectElement.addEventListener("change", async () => {
+            getActivities()
+        })
+        typeElement.addEventListener("change", async () => {
+            getActivities()
+        })
+        async function clickItem(subjectUniqueCode, activityId, duration, type){
+            if(type != 'Exam'){
+                window.location.href = '/activity/' + subjectUniqueCode + '/' + activityId
+                return
+            }
+            $('#modalTitle').text('Exam alert!')
+            $('#modalBody').text(`This exam has ${duration} minutes, once you have clicked the "I understand!" button, you will not be able to retake and must take the Exam right away.`)
+            $('#proceedButton').attr('href', `/activity/${subjectUniqueCode}/${activityId}`)
+            $('#myModal').modal('show')
+        }
+        async function getActivities(){
+            var selectedSubject = selectElement.value
+            var subjectId = selectElement.options[selectElement.selectedIndex].id
+            var type = typeElement.value
+            const [subjectCode, subjectTitle] = selectedSubject
+            $.post('/get-activities-by-subject', {
+                subjectId: subjectId,
+                type: type
+            }).done(async (response) => {
+                var acts = await response.activitiesOfSubject
+                var parentDiv = document.getElementById('todo-div')
+                parentDiv.innerHTML = ''
+                for(var i = 0; i < acts.length; i++){
+                    var newStatus = changeStatus(acts[i].status)
+                    var content = `
+                    <div class="col-12 col-md-6 todo-item-container" onclick="clickItem('${acts[i].subject.uniqueCode}', ${acts[i].id}, ${acts[i].duration}, '${acts[i].type}')">
+                            <div class="row todo">
+                                <div class="col-3 col-md-4 w-100 m-0 p-0 center-items icon-label text-center" style="border-right: 1px solid rgb(168, 190, 211);">
+                                    <i class="fa-regular fa-circle-check" style="transform: scale(5); color: ${(acts[i].answered != null) ? 'green' : 'rgb(220, 233, 250)'} ;"></i>
+                                    <span style="transform: translateY(40px);">${acts[i].formattedEndDate}</span>
+                                </div>
+                                <div class="col-9 col-md-8 w-100 h-100 m-0 p-3 row">
+                                    <div class="col-12 m-0 p-0 custom-text-truncate">
+                                        ${acts[i].name}
+                                    </div>
+                                    <div class="col-12 w-100 m-0 p-0 todo-info-container">
+                                        <span>${acts[i].subject.title} - ${acts[i].type}</span>
+                                        <span class="${newStatus}" style="display: ${(acts[i].answered != null) ? 'none' : 'block'};">${newStatus}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                    parentDiv.innerHTML += content
+                }
+            })
+        }
+        function changeStatus(status){
+            return (status == 'Ongoing') ? 'Available' : 'Overdue'
+        }
+    </script>
+</body>
+</html>

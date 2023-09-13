@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head') %>
+    <title>Activity</title>
+</head>
+<body>
+    <%- include('../partials/studentNavbar') %>
+    <div class="sidebar" id="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="navigateNav()"><i id="sidebar-icon" class="fa-solid fa-greater-than"></i></a>
+        <div class="text-center">
+            <h3><%= activity.name %></h3>
+        </div>
+        <% for( let i = 0; i < activity.questions.length; i++ ) { %>
+            <a href="<%= hrefLink + (i + 1) %>" data-answered="<%= activity.questions[i].status %>" <%= (i + 1 == questionNumber) ? "class=current-question" : '' %>><span class="answer-icon"><i class="fa-solid fa-check"></i></span>Question <%= i + 1 %></a>
+        <% } %>
+    </div>
+    <div class="main m-0 p-4 center-items">
+        <div class="activity-question m-0 p-2">
+            <% if (activity.material) { %>
+                <div class="w-100 m-0 p-0 my-4">
+                    <h5>Download Material:</h5>
+                    <a href="/uploads/<%= activity.material.fileName %>"><%= activity.material.fileName %></a>
+                </div>
+            <% } %>
+            <div class="w-100 m-0 p-0 row">
+                <div class="col-12 col-md-7 mb-5">
+                    <h5 class="activity-info-title">Question <%= questionNumber %></h5>
+                    <br>
+                    <h5><%= currentQuestion.prompt %></h5>
+                    <% if (currentQuestion.withImg) { %>
+                        <img style="max-width: 400px;" src="/uploads/<%= currentQuestion.withImg.fileName %>" alt="">
+                    <% } %>
+                    </div>
+                <div class="col-12 col-md-5">
+                    <h5 id="timer" class="timer"></h5>
+                    <% if (currentQuestion.type == 'mc') { %>
+                        <h5 class="activity-info-title">Select your answer</h5>
+                        <br>
+                        <% for( let i = 0; i < currentQuestion.choices.length; i++ ) { %>
+                            <div class="answer" data-status="<%= (currentQuestion.answerStatus == null) ? 'off' : ((currentQuestion.answerStatus == currentQuestion.choices[i]) ? 'on' : 'off') %>"><%= currentQuestion.choices[i] %></div>
+                        <% } %>
+                    <% } else {%>
+                        <h5 class="activity-info-title">Type your answer</h5>
+                        <br>
+                        <div class="form-group">
+                            <input value="<%= (currentQuestion.answerStatus == null) ? '' : currentQuestion.answerStatus %>" type="text" class="form-control" id="identificationAnswer" <%= (currentQuestion.answerStatus == null) ? '' : 'disabled' %> %>>
+                        </div>
+                    <% } %>
+
+                    <% if (currentQuestion.answerStatus == null) { %>
+                        <button id="submit-button" class="btn btn-block btn-primary" value="<%= currentQuestion.type %>/<%= currentQuestion.id %>" onclick="answerQuestion(value)" disabled style="transition: 0.5s;">Answer</button>
+                    <% } %>
+                    
+                    <% if (Number(questionNumber) != activity.questions.length) { %>
+                        <a href="<%= hrefLink + (Number(questionNumber) + 1) %>" id="next-question" class="btn btn-block btn-outline-primary" >Next Question</a>
+                    <% } else { %>
+                        <button onclick="submitActivity(value)" value="<%= activity.id %>" class="btn btn-block btn-success">Submit Activity</button>
+                        <script>
+                            async function submitActivity(activityId){
+                                $.post('/submit-activity', {
+                                    activityId
+                                }).done(async (response) => {
+                                    if(response.answeredActivity){
+                                        location.reload()
+                                    }else{
+                                        alert('Can\'t submit activity!')
+                                    }
+                                }).fail((error) => {
+                                    console.error(error)
+                                })
+                            }
+                        </script>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% if (currentQuestion.answerStatus == null) { %>
+        <script>
+            $(document).ready(() => {
+                var answers = document.querySelectorAll('.answer')
+                var button = document.getElementById('submit-button')
+                var selectedAnswer = null
+                const inputForm = document.getElementById('identificationAnswer')
+
+                answers.forEach(answer => {
+                    answer.addEventListener('click', () => {
+
+                        if(selectedAnswer && answer.dataset.status == 'off'){
+                            selectedAnswer.dataset.status = "off"
+                        }
+                        selectedAnswer = answer
+                        answer.dataset.status = answer.dataset.status == 'off' ? 'on' : 'off'
+                        
+                        button.disabled = answer.dataset.status == 'off'
+                    })
+                })
+                if(inputForm){
+                    inputForm.addEventListener('input', () => {
+                        button.disabled = !inputForm.value
+                    })
+                }
+            })
+        </script>
+    <% } %>
+    <% if (activity.type == 'Exam') { %>
+        <script>
+            function startCountdown(startTime, durationMinutes) {
+                const start = new Date(startTime)
+                console.log(start, durationMinutes)
+                const durationSeconds = durationMinutes * 60
+                const countdownInterval = setInterval(() => {
+                    const now = new Date()
+                    const differenceSeconds = Math.floor((start.getTime() - now.getTime()) / 1000)
+                    const remainingSeconds = Math.max(0, durationSeconds + differenceSeconds)
+                    if (remainingSeconds === 0) {
+                        clearInterval(countdownInterval)
+                        const url = window.location.href
+                        const segments = url.split("/")
+                        const number = segments[segments.length - 2]
+                        $.post('/submit-activity', {
+                            activityId: Number(number)
+                        }).done(async (response) => {
+                            if(response.answeredActivity){
+                                location.reload()
+                            }else{
+                                alert('Can\'t submit activity!')
+                            }
+                        }).fail((error) => {
+                            console.error(error)
+                        })
+                    } else {
+                        const remainingHours = Math.floor(remainingSeconds / 3600)
+                        const remainingMinutes = Math.floor((remainingSeconds % 3600) / 60)
+                        const remainingSecs = remainingSeconds % 60
+                        $('#timer').text(`${remainingHours.toString().padStart(2, '0')}:${remainingMinutes.toString().padStart(2, '0')}:${remainingSecs.toString().padStart(2, '0')}`)
+                    }
+                }, 1000); // Update every second
+            }
+            startCountdown('<%= examStartRecord.timeStart %>', Number('<%= activity.duration %>'))
+        </script>
+    <% } %>
+    <script>
+        var sidebarStatus = false
+
+        function navigateNav() {
+            document.getElementById("sidebar").style.left = sidebarStatus ? "-250px" : "0px";
+            var icon = document.getElementById("sidebar-icon");
+            icon.style.transition = "0.5s"
+            icon.style.transform = sidebarStatus ? "rotate(0)" : "rotate(180deg)"
+            sidebarStatus = !sidebarStatus
+        }
+
+        function answerQuestion(data){
+            var answer = ""
+            var type = data.split('/')[0]
+            var questionId = data.split('/')[1]
+            if(type == 'i'){
+                answer = document.getElementById('identificationAnswer').value
+            }else{
+                var choices = document.getElementsByClassName('answer')
+                for(var i = 0; i < choices.length; i++){
+                    if(choices[i].dataset.status == 'on'){
+                        answer = choices[i].innerHTML
+                        break
+                    }
+                }
+            }
+            $.post('/save-answer', {
+                questionId,
+                answer
+            }).done(async (response) => {
+                if(await response.answeredQuestion){
+                    const nextQuestion = document.getElementById('next-question')
+                    if(nextQuestion){
+                        nextQuestion.click()
+                        return
+                    }
+                    location.reload()
+                }
+            })
+        }
+
+    </script>
+</body>
+</html>

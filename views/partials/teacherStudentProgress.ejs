@@ -1,0 +1,54 @@
+<div class="custom-card w-100">
+    <div class="custom-card-header">
+        Student Progress
+    </div>
+    <h4 class="mt-3">Students' Status</h4>
+    <div class="table-responsive-md">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Student Name</th>
+                    <th scope="col">Score</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">View Answers</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <% for( let i = 0; i < studentsDetails.length; i++ ) { %>
+                        <tr>
+                            <td scope="row"><%= i + 1 %></td>
+                            <td><%= studentsDetails[i].student.user.name %></td>
+                            <td><span class="h5"><%= studentsDetails[i].score %></span> / <%= total %></td>
+                            <td><%= studentsDetails[i].ontime ? 'On time' : 'Late' %></td>
+                            <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#answerModal<%= studentsDetails[i].student.id %>">View Answers</button></td>
+                        </tr>
+                    <% } %>
+            </tbody>
+        </table>
+    </div>
+    <% for( let i = 0; i < studentsDetails.length; i++) { %>
+        <div class="modal fade" id="answerModal<%= studentsDetails[i].student.id %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Answers</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <% for( let j = 0; j < studentsDetails[i].student.answers.length; j++ ) { %>
+                            <h5>Question: <%= studentsDetails[i].student.answers[j].question.prompt %></h5>
+                            <h6><strong>Answer:</strong><%= studentsDetails[i].student.answers[j].question.answer%></h6>
+                            <h6><strong>Student Answer:</strong><%= studentsDetails[i].student.answers[j].answer%></h6>
+                        <% } %>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <% } %>
+</div>

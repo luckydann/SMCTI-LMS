@@ -1,0 +1,36 @@
+<nav class="navbar navbar-expand-lg bg-primary navbar-dark navbar-shadow">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/dashboard">SMC | LMS</a>
+
+        <% if (type != 'profile' && subjects.length > 0) { %>
+            <div class="w-100 m-0 p-0">
+                <div class="btn-group">
+                  <button id="button-name" class="btn btn-lg dropdown-toggle text-white text-left p-0" style="max-width: 100%;white-space: normal;" type="button" data-toggle="dropdown" aria-expanded="false">
+                    <%= subject.code %>/<%= subject.title %>/<%= subject.description %>
+                  </button>
+                  <div class="dropdown-menu">
+                    <% for( let index = 0; index < subjects.length; index++ ) { %>
+                      <a class="dropdown-item" href="/dashboard/<%= subjects[index].uniqueCode %>"><%= subjects[index].code %>/<%= subjects[index].title %>/<%= subjects[index].description %></a>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+        <% } %>
+
+        <ul class="navbar-nav d-flex flex-row me-1">
+            <li class="navbar-item nav-item me-3 me-lg-0">
+                <a class="navbar-group nav-link text-white" href="/dashboard">
+                    <i class="navbar-icon fas fa-home mx-1"></i>
+                    <span class="navbar-label">Home</span>
+                </a>
+            </li>
+            <li class="navbar-item nav-item me-3 me-lg-0">
+                <a class="navbar-group nav-link text-white" href="/profile">
+                    <i class="navbar-icon fas fa-user mx-1"></i>
+                    <span class="navbar-label">Profile</span>
+                </a>
+            </li>
+        </ul>
+
+    </div>
+</nav>

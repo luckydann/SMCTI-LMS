@@ -1,0 +1,60 @@
+<div class="custom-card">
+    <div class="custom-card-header">
+        Subjects
+    </div>
+
+    <% if (subjects) { %>
+        <% for( let i = 0; i < subjects.length; i++ ) { %>
+            <div class="subject-item">
+                <div class="subject-item-details">
+                    <div class="subject-item-name">
+                        <%= subjects[i].title %> - <%= subjects[i].code %>
+                    </div>
+                    <div class="subject-item-count">
+                        No. of Students: <%= subjects[i].students.length %>
+                    </div>
+                </div>
+                <button class="btn btn-outline-danger" style="float:right" id="<%= subjects[i].uniqueCode %>" onclick="dropSubject(id)">Drop Subject</button>
+            </div>
+        <% } %>
+    <% } %>
+
+    <div class="w-100">
+        <label for="subjectUniqueCode" class="h5 mt-5">Join new subject</label>
+        <div class="row">
+            <div class="form-group col-12 col-md-5">
+                <input type="text" class="form-control" id="subjectUniqueCode" name="subjectUniqueCode" placeholder="Enter Unique Code" required>
+                <div id="alert" class="alert alert-danger" role="alert" style="display: none;">
+                    <strong>Unique Code</strong> does not exist!
+                </div>
+            </div>
+            <div class="col-12 col-md-5">
+                <button class="btn btn-success btn-block" type="button" onclick="joinSubject()">Join Subject</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function dropSubject(id){
+            $.post('/drop-subject', {
+                subjectUniqueCode: id
+            }).done((response) => {
+                window.location.href = '/profile'
+            })
+        }
+        function joinSubject(){
+            var subjectUniqueCode = document.getElementById('subjectUniqueCode').value
+            var alertDiv = document.getElementById('alert')
+            $.post('/join-subject',{
+                subjectUniqueCode: subjectUniqueCode
+            }).done((response) => {
+                if(response.message == 'Not found'){
+                    alertDiv.style.display = 'block'
+                    return
+                }
+                alertDiv.style.display = 'none'
+                window.location.href = '/profile'
+            })
+        }
+    </script>
+</div>
